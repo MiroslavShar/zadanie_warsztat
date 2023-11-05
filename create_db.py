@@ -7,14 +7,11 @@ def create_db(cursor):
             """
     try:
         cursor.execute(query)
-        cursor.close()
-
     except psycopg2.DuplicateDatabase as error:
         print("Baza danych istnieje: ", error)
 
 def create_table_users(cursor):
-    try:
-        query = """
+    query = """
         CREATE TABLE users 
         (
         id serial Primary key, 
@@ -22,8 +19,8 @@ def create_table_users(cursor):
         hashed_password varchar(80)
         ); 
         """
+    try:
         cursor.execute(query)
-        cursor.close()
     except psycopg2.ProgrammingError as error:
         print("Tabela istnieje: ", error)
 
@@ -43,8 +40,23 @@ def create_table_messages(errors, cursor):
     """
     try:
         cursor.execute(query)
-        cursor.close()
     except psycopg2.DuplicateTable as error:
         print("Tabela istnieje: ", error)
 
+def delete_table(name, cursor):
+    query = f"""
+        DROP TABLE '{name}'; 
+        """
+    try:
+        cursor.execute(query)
+    except psycopg2.ProgrammingError as error:
+        print("Tabela istnieje: ", error)
 
+def delete_db(name, cursor):
+    query = f"""
+        DROP DATABASE {name}; 
+        """
+    try:
+        cursor.execute(query)
+    except psycopg2.ProgrammingError as error:
+        print("Tabela istnieje: ", error)
