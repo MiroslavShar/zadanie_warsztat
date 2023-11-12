@@ -54,14 +54,15 @@ def app():
             new_password = input('Podaj nowe hasło \n')
             User.edit_password(cursor_second, id_user, new_username, new_password)
 
-
-
         elif opcja == '6':
             username = input('Username \n')
             User.delete(User(username), cursor_second)
 
-
         elif opcja == '7':
+            pass
+
+
+        elif opcja == '8':
             cursor.close()
             connection.close()
             break
