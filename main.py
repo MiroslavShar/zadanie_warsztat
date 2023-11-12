@@ -10,7 +10,9 @@ def app():
     2 - Find user by ID
     3 - Find user by Username
     4 - Find all users
-    6 - Exit
+    5 - New password
+    6 - Delete user
+    7 - Exit
     """
 
 
@@ -45,8 +47,21 @@ def app():
         elif opcja == '4':
             print(User.load_all_users(cursor_second))
 
+        elif opcja == '5':
+            id_user = input('ID user \n')
+            print(User.load_user_by_id(cursor_second, id_user))
+            new_username = input('Username \n')
+            new_password = input('Podaj nowe hasło \n')
+            User.edit_password(cursor_second, id_user, new_username, new_password)
+
+
 
         elif opcja == '6':
+            username = input('Username \n')
+            User.delete(User(username), cursor_second)
+
+
+        elif opcja == '7':
             cursor.close()
             connection.close()
             break

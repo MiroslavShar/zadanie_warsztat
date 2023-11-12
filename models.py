@@ -39,8 +39,23 @@ class User:
             cursor_second.execute(query, values)
             self._id = cursor_second.fetchone()[0]
             return True
-        return False
-
+        else:
+            query = """
+            UPDATE users SET username=%s, hashed_password=%s
+            WHERE id=%s
+            """
+            values = (self.username, self.hashed_password, self._id)
+            cursor_second.execute(query, values)
+            return True
+    @staticmethod
+    def edit_password(cursor_second, id_user, new_username, new_password):
+        query = f"""
+        UPDATE users SET username=%s, hashed_password=%s
+        WHERE id=%s
+        """
+        values = (new_username, new_password, id_user)
+        cursor_second.execute(query, values)
+        return True
 
     @staticmethod
     def load_user_by_username(cursor_second, username_new):
@@ -96,7 +111,47 @@ class User:
             users.append(loaded_user)
         return users
 
+    def delete(self, cursor_second):
+        query = f"""
+        DELETE FROM users 
+        WHERE username = %s; 
+        """
+        cursor_second.execute(query, (self.username,))
+        self._id = -1
+        return True
+
+    class Messages:
+        def __init__(self, from_id, to_id, text):
+            self._id = -1
+            self.creation_data = None
+            self.to_id = to_id
+            self.from_id = from_id
+            self.text = text
+
+        @property
+        def id(self):
+            return self._id
+
+        def save_to_db(self, cursor_second):
+            if self._id == -1:
+                query = """
+                INSERT INTO messages (from_id, to_id, creation_date, text)
+                VALUES (%s, %s, %s, %s,)
+                RETURNING ID;
+                """
+                values = (self.from_id, self.to_id, self.creation_data, self.text)
+                cursor_second.execute(query, values)
+                self._id = cursor_second.fetchone()[0]
+                return True
+            else:
+                query = """
+                UPDATE messages 
+                SET from
+                """
+
 
     def __str__(self):
         return str(self.__class__) + '\n'+ '\n'.join(('{} = {}'.format(item, self.__dict__[item]) for item in self.__dict__))
 
+    def __repr__(self):
+        return str(self.__class__) + '\n'+ '\n'.join(('{} = {}'.format(item, self.__dict__[item]) for item in self.__dict__))
