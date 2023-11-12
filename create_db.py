@@ -1,17 +1,19 @@
 import psycopg2
 from psycopg2.errors import DuplicateDatabase, DuplicateTable, OperationalError
+from psycopg2 import errors
 
 def create_db(cursor):
-    query = """
+    try:
+        query = """
             CREATE DATABASE users_app;
             """
-    try:
         cursor.execute(query)
-    except psycopg2.DuplicateDatabase as error:
-        print("Baza danych istnieje: ", error)
+    except errors.DuplicateDatabase:
+        print("The database exists")
 
-def create_table_users(cursor):
-    query = """
+def create_table_users(cursor_second):
+    try:
+        query = """
         CREATE TABLE users 
         (
         id serial Primary key, 
@@ -19,12 +21,11 @@ def create_table_users(cursor):
         hashed_password varchar(80)
         ); 
         """
-    try:
-        cursor.execute(query)
-    except psycopg2.ProgrammingError as error:
-        print("Tabela istnieje: ", error)
+        cursor_second.execute(query)
+    except errors.DuplicateTable:
+        print("The Table exists")
 
-def create_table_messages(errors, cursor):
+def create_table_messages(cursor_second):
     text = errors
     query = """
     CREATE TABLE messages
@@ -34,21 +35,21 @@ def create_table_messages(errors, cursor):
     to_id int,
     creation_date timestamp,
     text varchar(255),
-    FOREIGN KEY (from_id) REFERENCES users,
-    FOREIGN KEY (to_id) REFERENCES users
+    FOREIGN KEY (from_id) REFERENCES users (id),
+    FOREIGN KEY (to_id) REFERENCES users (id)
     )
     """
     try:
-        cursor.execute(query)
-    except psycopg2.DuplicateTable as error:
-        print("Tabela istnieje: ", error)
+        cursor_second.execute(query)
+    except errors.DuplicateTable:
+        print("The Table exists")
 
-def delete_table(name, cursor):
+def delete_table(name, cursor_second):
     query = f"""
         DROP TABLE '{name}'; 
         """
     try:
-        cursor.execute(query)
+        cursor_second.execute(query)
     except psycopg2.ProgrammingError as error:
         print("Tabela istnieje: ", error)
 
