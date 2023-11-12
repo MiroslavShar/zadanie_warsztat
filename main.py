@@ -1,8 +1,11 @@
+import datetime
+
 import psycopg2
 from psycopg2.errors import DuplicateDatabase, DuplicateTable, OperationalError
 from connect import connect, connect_second
 from create_db import create_db, create_table_users, create_table_messages, delete_table, delete_db
-from models import User
+from models import User, Messages
+
 
 def app():
     OPCJE = """
@@ -10,9 +13,11 @@ def app():
     2 - Find user by ID
     3 - Find user by Username
     4 - Find all users
-    5 - New password
+    5 - Edit user
     6 - Delete user
-    7 - Exit
+    7 - Create message
+    8 - Find all messages
+    9 - Exit
     """
 
 
@@ -51,18 +56,26 @@ def app():
             id_user = input('ID user \n')
             print(User.load_user_by_id(cursor_second, id_user))
             new_username = input('Username \n')
-            new_password = input('Podaj nowe hasło \n')
+            new_password = input('New password \n')
             User.edit_password(cursor_second, id_user, new_username, new_password)
 
         elif opcja == '6':
             username = input('Username \n')
+            print(User.load_user_by_username(cursor_second, username))
             User.delete(User(username), cursor_second)
 
         elif opcja == '7':
-            pass
-
+            text = input('Write your message \n')
+            from_id = input("Who will be sending \nInput ID user \n")
+            to_id = input("Who will be the receiver \nInput ID user \n")
+            message = Messages(from_id, to_id, text)
+            Messages.save_to_db(message, cursor_second)
 
         elif opcja == '8':
+            print(Messages.loaded_all_messages(cursor_second))
+
+
+        elif opcja == '9':
             cursor.close()
             connection.close()
             break
@@ -71,16 +84,10 @@ def app():
 
 
 
-        # try:
-        #     connection_second = connect_second()
-        #     cursor_second = connection_second.cursor()
-        #     create_table_users(cursor_second)
-        # except psycopg2.DuplicateTable:
-        #     print("The table exists")
-        # try:
-        #     create_table_messages(cursor_second)
-        # except psycopg2.DuplicateTable:
-        #     print("The table exists")
+
+
+
+
 
     cursor.close()
     connection.close()

@@ -1,3 +1,6 @@
+import datetime
+from datetime import datetime, date
+
 from connect import connect, connect_second
 import hashlib
 from clcrypto import generate_salt, hash_password, check_password
@@ -120,34 +123,61 @@ class User:
         self._id = -1
         return True
 
-    class Messages:
-        def __init__(self, from_id, to_id, text):
-            self._id = -1
-            self.creation_data = None
-            self.to_id = to_id
-            self.from_id = from_id
-            self.text = text
 
-        @property
-        def id(self):
-            return self._id
 
-        def save_to_db(self, cursor_second):
-            if self._id == -1:
-                query = """
-                INSERT INTO messages (from_id, to_id, creation_date, text)
-                VALUES (%s, %s, %s, %s,)
-                RETURNING ID;
-                """
-                values = (self.from_id, self.to_id, self.creation_data, self.text)
-                cursor_second.execute(query, values)
-                self._id = cursor_second.fetchone()[0]
-                return True
-            else:
-                query = """
-                UPDATE messages 
-                SET from
-                """
+    def __str__(self):
+        return str(self.__class__) + '\n'+ '\n'.join(('{} = {}'.format(item, self.__dict__[item]) for item in self.__dict__))
+
+    def __repr__(self):
+        return str(self.__class__) + '\n'+ '\n'.join(('{} = {}'.format(item, self.__dict__[item]) for item in self.__dict__))
+
+
+class Messages:
+    def __init__(self, from_id="", to_id="", text=""):
+        self._id = -1
+        self.creation_data = datetime.today().strftime('%Y-%m-%d')
+        self.to_id = to_id
+        self.from_id = from_id
+        self.text = text
+
+    @property
+    def id(self):
+        return self._id
+
+    # @staticmethod
+    # def m_time(self):
+    #     self.creation_data = datetime.today().strftime('%Y-%m-%d')
+
+    def save_to_db(self, cursor_second):
+        if self._id == -1:
+            query = """
+            INSERT INTO messages (from_id, to_id, creation_date, text)
+            VALUES (%s, %s, %s, %s)
+            RETURNING ID;
+            """
+            values = (self.from_id, self.to_id, self.creation_data, self.text)
+            cursor_second.execute(query, values)
+            self._id = cursor_second.fetchone()[0]
+            return True
+        else:
+            pass
+    @staticmethod
+    def loaded_all_messages(cursor_second):
+        query = """
+        SELECT * FROM messages;
+        """
+        messages = []
+        cursor_second.execute(query)
+        for sms in cursor_second.fetchall():
+            id_, from_id, to_id, creation_date, text = sms
+            loaded_messages = Messages()
+            loaded_messages._id = id_
+            loaded_messages.to_id = to_id
+            loaded_messages.from_id = from_id
+            loaded_messages.text = text
+            loaded_messages.creation_data = creation_date
+            messages.append(loaded_messages)
+        return messages
 
 
     def __str__(self):
